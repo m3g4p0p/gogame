@@ -15,11 +15,15 @@ var playerSprite = util.Must(util.LoadImage(assets, "assets/playerShip1_blue.png
 type Game struct{}
 
 func (g *Game) Update() error {
+
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	screen.DrawImage(playerSprite, nil)
+	x, y := ebiten.CursorPosition()
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Translate(float64(x), float64(y))
+	screen.DrawImage(playerSprite, op)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
