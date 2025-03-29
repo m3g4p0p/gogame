@@ -2,8 +2,6 @@ package main
 
 import (
 	"embed"
-	"image"
-	_ "image/png"
 	"log"
 	"m3g4p0p/game/util"
 
@@ -12,24 +10,7 @@ import (
 
 //go:embed assets/*
 var assets embed.FS
-var playerSprite = util.Must(loadImage("assets/playerShip1_blue.png"))
-
-func loadImage(name string) (*ebiten.Image, error) {
-	f, err := assets.Open(name)
-
-	if err != nil {
-		return nil, err
-	}
-
-	defer f.Close()
-
-	if img, _, err := image.Decode(f); err != nil {
-		return nil, err
-	} else {
-		return ebiten.NewImageFromImage(img), nil
-	}
-
-}
+var playerSprite = util.Must(util.LoadImage(assets, "assets/playerShip1_blue.png"))
 
 type Game struct{}
 
@@ -42,7 +23,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
-	return 320, 240
+	return 640, 480
 }
 
 func main() {
