@@ -2,6 +2,7 @@ package main
 
 import (
 	"embed"
+	"fmt"
 	"log"
 	"math"
 
@@ -29,8 +30,9 @@ func (g *Game) Update() error {
 		g.targetPos = util.CursorPosition()
 	}
 
+	speed := 1 / float64(ebiten.TPS())
 	delta := g.targetPos.Sub(g.playerPos)
-	g.playerPos = g.playerPos.Add(delta)
+	g.playerPos = g.playerPos.Add(delta.Scale(speed))
 
 	return nil
 }
@@ -39,7 +41,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	cursorPos := util.CursorPosition()
 	angle := cursorPos.Angle(g.playerPos) - math.Pi/2
 	distance := cursorPos.Distance(g.playerPos)
-	ebitenutil.DebugPrint(screen, g.playerPos.String())
+	ebitenutil.DebugPrint(screen, fmt.Sprint(1/float64(ebiten.TPS())))
 	op := util.RotateCenter(playerSprite, angle, util.Vector{})
 	op.GeoM.Translate(g.playerPos.X, g.playerPos.Y)
 	screen.DrawImage(playerSprite, op)

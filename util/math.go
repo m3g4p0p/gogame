@@ -19,8 +19,8 @@ func (v Vector) Sub(t Vector) Vector {
 	return Vector{v.X - t.X, v.Y - t.Y}
 }
 
-func (v Vector) Scale(t Vector) Vector {
-	return Vector{v.X * t.X, v.Y * t.Y}
+func (v Vector) Scale(t float64) Vector {
+	return Vector{v.X * t, v.Y * t}
 }
 
 func (v Vector) Angle(t Vector) float64 {
