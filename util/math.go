@@ -1,6 +1,18 @@
 package util
 
-import "github.com/hajimehoshi/ebiten/v2"
+import (
+	"fmt"
+
+	"github.com/hajimehoshi/ebiten/v2"
+)
+
+type Vector struct {
+	X, Y float64
+}
+
+func (v Vector) String() string {
+	return fmt.Sprintf("(%v, %v)", v.X, v.Y)
+}
 
 func RotateCenter(img *ebiten.Image, theta, offsetX, offsetY float64) *ebiten.DrawImageOptions {
 	bounds := img.Bounds()

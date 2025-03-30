@@ -2,7 +2,6 @@ package main
 
 import (
 	"embed"
-	"fmt"
 	"log"
 
 	"m3g4p0p/game/util"
@@ -19,22 +18,14 @@ var (
 	fireSprite   = util.Must(util.LoadImage(assets, "assets/Effects/fire09.png"))
 )
 
-type Vector struct {
-	X, Y float64
-}
-
-func (v Vector) String() string {
-	return fmt.Sprintf("(%v, %v)", v.X, v.Y)
-}
-
 type Game struct {
-	targetPos Vector
+	targetPos util.Vector
 }
 
 func (g *Game) Update() error {
 	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 		x, y := ebiten.CursorPosition()
-		g.targetPos = Vector{float64(x), float64(y)}
+		g.targetPos = util.Vector{X: float64(x), Y: float64(y)}
 	}
 
 	return nil
