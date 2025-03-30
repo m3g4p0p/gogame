@@ -11,6 +11,18 @@ type Vector struct {
 	X, Y float64
 }
 
+func (v Vector) Add(t Vector) Vector {
+	return Vector{v.X + t.X, v.Y + t.Y}
+}
+
+func (v Vector) Sub(t Vector) Vector {
+	return Vector{v.X - t.X, v.Y - t.Y}
+}
+
+func (v Vector) Scale(t Vector) Vector {
+	return Vector{v.X * t.X, v.Y * t.Y}
+}
+
 func (v Vector) Angle(t Vector) float64 {
 	return math.Atan2(t.Y-v.Y, t.X-v.X)
 }
