@@ -20,6 +20,7 @@ var (
 )
 
 type Game struct {
+	playerPos util.Vector
 	targetPos util.Vector
 }
 
@@ -28,16 +29,19 @@ func (g *Game) Update() error {
 		g.targetPos = util.CursorPosition()
 	}
 
+	delta := g.targetPos.Sub(g.playerPos)
+	g.playerPos = g.playerPos.Add(delta)
+
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	cursorPos := util.CursorPosition()
-	angle := cursorPos.Angle(g.targetPos) - math.Pi/2
-	distance := cursorPos.Distance(g.targetPos)
-	ebitenutil.DebugPrint(screen, g.targetPos.String())
+	angle := cursorPos.Angle(g.playerPos) - math.Pi/2
+	distance := cursorPos.Distance(g.playerPos)
+	ebitenutil.DebugPrint(screen, g.playerPos.String())
 	op := util.RotateCenter(playerSprite, angle, util.Vector{})
-	op.GeoM.Translate(g.targetPos.X, g.targetPos.Y)
+	op.GeoM.Translate(g.playerPos.X, g.playerPos.Y)
 	screen.DrawImage(playerSprite, op)
 
 	fireOp := util.RotateCenter(
@@ -49,7 +53,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	)
 
 	fireOp.ColorScale.ScaleAlpha(float32(distance) / 100)
-	fireOp.GeoM.Translate(g.targetPos.X, g.targetPos.Y)
+	fireOp.GeoM.Translate(g.playerPos.X, g.playerPos.Y)
 	screen.DrawImage(fireSprite, fireOp)
 }
 
