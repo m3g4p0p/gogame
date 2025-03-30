@@ -2,12 +2,17 @@ package util
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type Vector struct {
 	X, Y float64
+}
+
+func (v Vector) Angle(t Vector) float64 {
+	return math.Atan2(t.Y-v.Y, t.X-v.X)
 }
 
 func (v Vector) String() string {
@@ -23,4 +28,9 @@ func RotateCenter(img *ebiten.Image, theta float64, offset Vector) *ebiten.DrawI
 	op.GeoM.Rotate(theta)
 
 	return op
+}
+
+func CursorPosition() Vector {
+	x, y := ebiten.CursorPosition()
+	return Vector{float64(x), float64(y)}
 }

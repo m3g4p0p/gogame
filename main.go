@@ -3,6 +3,7 @@ package main
 import (
 	"embed"
 	"log"
+	"math"
 
 	"m3g4p0p/game/util"
 
@@ -24,15 +25,14 @@ type Game struct {
 
 func (g *Game) Update() error {
 	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
-		x, y := ebiten.CursorPosition()
-		g.targetPos = util.Vector{X: float64(x), Y: float64(y)}
+		g.targetPos = util.CursorPosition()
 	}
 
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	angle := 0.1
+	angle := util.CursorPosition().Angle(g.targetPos) - math.Pi/2
 	ebitenutil.DebugPrint(screen, g.targetPos.String())
 	op := util.RotateCenter(playerSprite, angle, util.Vector{})
 	op.GeoM.Translate(g.targetPos.X, g.targetPos.Y)
