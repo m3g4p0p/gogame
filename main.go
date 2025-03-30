@@ -29,7 +29,6 @@ func (v Vector) String() string {
 
 type Game struct {
 	targetPos Vector
-	angle     float64
 }
 
 func (g *Game) Update() error {
@@ -42,10 +41,21 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
+	angle := 0.1
 	ebitenutil.DebugPrint(screen, g.targetPos.String())
-	op := util.RotateCenter(playerSprite, 0.1)
+	op := util.RotateCenter(playerSprite, angle, 0, 0)
 	op.GeoM.Translate(g.targetPos.X, g.targetPos.Y)
 	screen.DrawImage(playerSprite, op)
+
+	fireOp := util.RotateCenter(
+		fireSprite,
+		angle,
+		float64(playerSprite.Bounds().Dx())/2-float64(fireSprite.Bounds().Dx())/2,
+		float64(playerSprite.Bounds().Dy()),
+	)
+
+	fireOp.GeoM.Translate(g.targetPos.X, g.targetPos.Y)
+	screen.DrawImage(fireSprite, fireOp)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
