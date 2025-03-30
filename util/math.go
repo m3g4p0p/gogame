@@ -21,7 +21,6 @@ func RotateCenter(img *ebiten.Image, theta float64, offset Vector) *ebiten.DrawI
 
 	op.GeoM.Translate(-dx/2+offset.X, -dy/2+offset.Y)
 	op.GeoM.Rotate(theta)
-	op.GeoM.Translate(dx/2, dy/2)
 
 	return op
 }

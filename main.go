@@ -42,8 +42,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		fireSprite,
 		angle,
 		util.Vector{
-			X: float64(playerSprite.Bounds().Dx())/2 - float64(fireSprite.Bounds().Dx())/2,
-			Y: float64(playerSprite.Bounds().Dy()),
+			Y: float64(playerSprite.Bounds().Dy()) * 0.7,
 		},
 	)
 
