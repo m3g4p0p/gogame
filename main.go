@@ -38,10 +38,10 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	cursorPos := util.CursorPosition()
-	angle := cursorPos.Angle(g.playerPos) - math.Pi/2
-	distance := cursorPos.Distance(g.playerPos)
-	ebitenutil.DebugPrint(screen, fmt.Sprint(1/float64(ebiten.TPS())))
+	angle := util.CursorPosition().Angle(g.playerPos) - math.Pi/2
+	distance := g.targetPos.Distance(g.playerPos)
+	ebitenutil.DebugPrint(screen, fmt.Sprint(g.targetPos))
+
 	op := util.RotateCenter(playerSprite, angle, util.Vector{})
 	op.GeoM.Translate(g.playerPos.X, g.playerPos.Y)
 	screen.DrawImage(playerSprite, op)
