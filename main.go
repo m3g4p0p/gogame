@@ -34,15 +34,17 @@ func (g *Game) Update() error {
 func (g *Game) Draw(screen *ebiten.Image) {
 	angle := 0.1
 	ebitenutil.DebugPrint(screen, g.targetPos.String())
-	op := util.RotateCenter(playerSprite, angle, 0, 0)
+	op := util.RotateCenter(playerSprite, angle, util.Vector{})
 	op.GeoM.Translate(g.targetPos.X, g.targetPos.Y)
 	screen.DrawImage(playerSprite, op)
 
 	fireOp := util.RotateCenter(
 		fireSprite,
 		angle,
-		float64(playerSprite.Bounds().Dx())/2-float64(fireSprite.Bounds().Dx())/2,
-		float64(playerSprite.Bounds().Dy()),
+		util.Vector{
+			X: float64(playerSprite.Bounds().Dx())/2 - float64(fireSprite.Bounds().Dx())/2,
+			Y: float64(playerSprite.Bounds().Dy()),
+		},
 	)
 
 	fireOp.GeoM.Translate(g.targetPos.X, g.targetPos.Y)

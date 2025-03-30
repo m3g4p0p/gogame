@@ -14,12 +14,12 @@ func (v Vector) String() string {
 	return fmt.Sprintf("(%v, %v)", v.X, v.Y)
 }
 
-func RotateCenter(img *ebiten.Image, theta, offsetX, offsetY float64) *ebiten.DrawImageOptions {
+func RotateCenter(img *ebiten.Image, theta float64, offset Vector) *ebiten.DrawImageOptions {
 	bounds := img.Bounds()
 	dx, dy := float64(bounds.Dx()), float64(bounds.Dy())
 	op := &ebiten.DrawImageOptions{}
 
-	op.GeoM.Translate(-dx/2+offsetX, -dy/2+offsetY)
+	op.GeoM.Translate(-dx/2+offset.X, -dy/2+offset.Y)
 	op.GeoM.Rotate(theta)
 	op.GeoM.Translate(dx/2, dy/2)
 
