@@ -32,7 +32,9 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	angle := util.CursorPosition().Angle(g.targetPos) - math.Pi/2
+	cursorPos := util.CursorPosition()
+	angle := cursorPos.Angle(g.targetPos) - math.Pi/2
+	distance := cursorPos.Distance(g.targetPos)
 	ebitenutil.DebugPrint(screen, g.targetPos.String())
 	op := util.RotateCenter(playerSprite, angle, util.Vector{})
 	op.GeoM.Translate(g.targetPos.X, g.targetPos.Y)
@@ -46,6 +48,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		},
 	)
 
+	fireOp.ColorScale.ScaleAlpha(float32(distance) / 100)
 	fireOp.GeoM.Translate(g.targetPos.X, g.targetPos.Y)
 	screen.DrawImage(fireSprite, fireOp)
 }

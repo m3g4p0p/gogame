@@ -15,6 +15,10 @@ func (v Vector) Angle(t Vector) float64 {
 	return math.Atan2(t.Y-v.Y, t.X-v.X)
 }
 
+func (v Vector) Distance(t Vector) float64 {
+	return math.Sqrt(math.Pow(t.X-v.X, 2) + math.Pow(t.Y-v.Y, 2))
+}
+
 func (v Vector) String() string {
 	return fmt.Sprintf("(%v, %v)", v.X, v.Y)
 }
