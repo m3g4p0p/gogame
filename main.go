@@ -2,7 +2,10 @@ package main
 
 import (
 	"embed"
+	"fmt"
 	"log"
+	"math"
+
 	"m3g4p0p/game/util"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -11,34 +14,49 @@ import (
 
 //go:embed assets/*
 var assets embed.FS
-var playerSprite = util.Must(util.LoadImage(assets, "assets/playerShip1_blue.png"))
-var fireSprite = util.Must(util.LoadImage(assets, "assets/Effects/fire09.png"))
+
+var (
+	playerSprite = util.Must(util.LoadImage(assets, "assets/playerShip1_blue.png"))
+	fireSprite   = util.Must(util.LoadImage(assets, "assets/Effects/fire09.png"))
+)
 
 type Game struct {
-	targetPos ebiten.GeoM
+	playerPos util.Vector
+	targetPos util.Vector
 }
 
 func (g *Game) Update() error {
 	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
-		x, y := ebiten.CursorPosition()
-		geom := &ebiten.GeoM{}
-		geom.Translate(float64(x), float64(y))
-		g.targetPos = *geom
+		g.targetPos = util.CursorPosition()
 	}
+
+	speed := 1 / float64(ebiten.TPS())
+	delta := g.targetPos.Sub(g.playerPos)
+	g.playerPos = g.playerPos.Add(delta.Scale(speed))
 
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	ebitenutil.DebugPrint(screen, g.targetPos.String())
-	screen.DrawImage(playerSprite, &ebiten.DrawImageOptions{GeoM: g.targetPos})
+	angle := util.CursorPosition().Angle(g.playerPos) - math.Pi/2
+	distance := g.targetPos.Distance(g.playerPos)
+	ebitenutil.DebugPrint(screen, fmt.Sprint(g.targetPos))
 
-	firePos := g.targetPos
-	firePos.Translate(
-		float64(playerSprite.Bounds().Dx())/2-float64(fireSprite.Bounds().Dx())/2,
-		float64(playerSprite.Bounds().Dy()),
+	op := util.RotateCenter(playerSprite, angle, util.Vector{})
+	op.GeoM.Translate(g.playerPos.X, g.playerPos.Y)
+	screen.DrawImage(playerSprite, op)
+
+	fireOp := util.RotateCenter(
+		fireSprite,
+		angle,
+		util.Vector{
+			Y: float64(playerSprite.Bounds().Dy()) * 0.7,
+		},
 	)
-	screen.DrawImage(fireSprite, &ebiten.DrawImageOptions{GeoM: firePos})
+
+	fireOp.ColorScale.ScaleAlpha(float32(distance) / 100)
+	fireOp.GeoM.Translate(g.playerPos.X, g.playerPos.Y)
+	screen.DrawImage(fireSprite, fireOp)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
