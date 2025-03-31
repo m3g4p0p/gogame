@@ -2,6 +2,7 @@ package main
 
 import (
 	"embed"
+	"errors"
 	"fmt"
 	"log"
 	"math"
@@ -26,6 +27,10 @@ type Game struct {
 }
 
 func (g *Game) Update() error {
+	if ebiten.IsKeyPressed(ebiten.KeyC) && ebiten.IsKeyPressed(ebiten.KeyControl) {
+		return errors.New("exit")
+	}
+
 	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 		g.targetPos = util.CursorPosition()
 	}
@@ -66,6 +71,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 func main() {
 	ebiten.SetWindowSize(640, 480)
 	ebiten.SetWindowTitle("Hello, World!")
+	ebiten.SetFullscreen(true)
 
 	if err := ebiten.RunGame(&Game{}); err != nil {
 		log.Fatal(err)
