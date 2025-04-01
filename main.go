@@ -9,6 +9,7 @@ import (
 	"runtime"
 
 	"m3g4p0p/game/util"
+	"m3g4p0p/game/vec2"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -23,8 +24,8 @@ var (
 )
 
 type Game struct {
-	playerPos util.Vector
-	targetPos util.Vector
+	playerPos vec2.Vector
+	targetPos vec2.Vector
 }
 
 func (g *Game) Update() error {
@@ -48,14 +49,14 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	distance := g.targetPos.Distance(g.playerPos)
 	ebitenutil.DebugPrint(screen, fmt.Sprint(g.targetPos))
 
-	op := util.RotateCenter(playerSprite, angle, util.Vector{})
+	op := util.RotateCenter(playerSprite, angle, vec2.Vector{})
 	op.GeoM.Translate(g.playerPos.X, g.playerPos.Y)
 	screen.DrawImage(playerSprite, op)
 
 	fireOp := util.RotateCenter(
 		fireSprite,
 		angle,
-		util.Vector{
+		vec2.Vector{
 			Y: float64(playerSprite.Bounds().Dy()) * 0.7,
 		},
 	)

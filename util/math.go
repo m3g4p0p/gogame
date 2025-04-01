@@ -1,41 +1,12 @@
 package util
 
 import (
-	"fmt"
-	"math"
+	"m3g4p0p/game/vec2"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-type Vector struct {
-	X, Y float64
-}
-
-func (v Vector) Add(t Vector) Vector {
-	return Vector{v.X + t.X, v.Y + t.Y}
-}
-
-func (v Vector) Sub(t Vector) Vector {
-	return Vector{v.X - t.X, v.Y - t.Y}
-}
-
-func (v Vector) Scale(t float64) Vector {
-	return Vector{v.X * t, v.Y * t}
-}
-
-func (v Vector) Angle(t Vector) float64 {
-	return math.Atan2(t.Y-v.Y, t.X-v.X)
-}
-
-func (v Vector) Distance(t Vector) float64 {
-	return math.Sqrt(math.Pow(t.X-v.X, 2) + math.Pow(t.Y-v.Y, 2))
-}
-
-func (v Vector) String() string {
-	return fmt.Sprintf("(%v, %v)", v.X, v.Y)
-}
-
-func RotateCenter(img *ebiten.Image, theta float64, offset Vector) *ebiten.DrawImageOptions {
+func RotateCenter(img *ebiten.Image, theta float64, offset vec2.Vector) *ebiten.DrawImageOptions {
 	bounds := img.Bounds()
 	dx, dy := float64(bounds.Dx()), float64(bounds.Dy())
 	op := &ebiten.DrawImageOptions{}
@@ -46,7 +17,7 @@ func RotateCenter(img *ebiten.Image, theta float64, offset Vector) *ebiten.DrawI
 	return op
 }
 
-func CursorPosition() Vector {
+func CursorPosition() vec2.Vector {
 	x, y := ebiten.CursorPosition()
-	return Vector{float64(x), float64(y)}
+	return vec2.Vector{X: float64(x), Y: float64(y)}
 }
