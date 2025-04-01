@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"runtime"
 
 	"m3g4p0p/game/util"
 
@@ -65,13 +66,16 @@ func (g *Game) Draw(screen *ebiten.Image) {
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
-	return 640, 480
+	return outsideWidth, outsideHeight
 }
 
 func main() {
 	ebiten.SetWindowSize(640, 480)
 	ebiten.SetWindowTitle("Hello, World!")
-	ebiten.SetFullscreen(true)
+
+	if runtime.GOOS == "js" {
+		ebiten.SetFullscreen(true)
+	}
 
 	if err := ebiten.RunGame(&Game{}); err != nil {
 		log.Fatal(err)
