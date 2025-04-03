@@ -7,11 +7,13 @@ import (
 	"math"
 	"runtime"
 
+	"m3g4p0p/game/components"
 	"m3g4p0p/game/util"
 	"m3g4p0p/game/vec2"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/yohamta/donburi"
+	"github.com/yohamta/donburi/filter"
 )
 
 //go:embed assets/*
@@ -42,6 +44,15 @@ func (g *Game) Update() error {
 	delta := g.targetPos.Sub(g.playerPos)
 	g.playerPos = g.playerPos.Add(delta.Scale(speed))
 	logger.Print(g.targetPos)
+
+	query := donburi.NewQuery(filter.Contains(components.Position))
+
+	for entry := range query.Iter(g.world) {
+		pos := components.Position.Get(entry)
+		delta := g.targetPos.Sub(*pos)
+		newPos := pos.Add(delta.Scale(speed))
+		components.Position.Set(entry, &newPos)
+	}
 
 	return nil
 }
@@ -81,7 +92,10 @@ func newGame() *Game {
 		Y: float64(height) / 2,
 	}
 
-	return &Game{donburi.NewWorld(), center, center}
+	world := donburi.NewWorld()
+	world.Create(components.Position)
+
+	return &Game{world, center, center}
 }
 
 func main() {
