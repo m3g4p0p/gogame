@@ -3,7 +3,6 @@ package main
 import (
 	"embed"
 	"errors"
-	"fmt"
 	"log"
 	"math"
 	"runtime"
@@ -12,11 +11,11 @@ import (
 	"m3g4p0p/game/vec2"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
 //go:embed assets/*
 var assets embed.FS
+var logger = util.NewLogger(log.Lshortfile)
 
 var (
 	playerSprite = util.Must(util.LoadImage(assets, "assets/playerShip1_blue.png"))
@@ -40,14 +39,16 @@ func (g *Game) Update() error {
 	speed := 1 / float64(ebiten.TPS())
 	delta := g.targetPos.Sub(g.playerPos)
 	g.playerPos = g.playerPos.Add(delta.Scale(speed))
+	logger.Print(g.targetPos)
 
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
+	logger.Flush(screen)
+
 	angle := util.CursorPosition().Angle(g.playerPos) - math.Pi/2
 	distance := g.targetPos.Distance(g.playerPos)
-	ebitenutil.DebugPrint(screen, fmt.Sprint(g.targetPos))
 
 	op := util.RotateCenter(playerSprite, angle, vec2.Vector{})
 	op.GeoM.Translate(g.playerPos.X, g.playerPos.Y)
