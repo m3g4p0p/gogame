@@ -11,6 +11,7 @@ import (
 	"m3g4p0p/game/vec2"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/yohamta/donburi"
 )
 
 //go:embed assets/*
@@ -23,6 +24,7 @@ var (
 )
 
 type Game struct {
+	world     donburi.World
 	playerPos vec2.Vector
 	targetPos vec2.Vector
 }
@@ -71,6 +73,17 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 	return outsideWidth, outsideHeight
 }
 
+func newGame() *Game {
+	width, height := ebiten.WindowSize()
+
+	center := vec2.Vector{
+		X: float64(width) / 2,
+		Y: float64(height) / 2,
+	}
+
+	return &Game{donburi.NewWorld(), center, center}
+}
+
 func main() {
 	ebiten.SetWindowSize(640, 480)
 	ebiten.SetWindowTitle("Hello, World!")
@@ -79,7 +92,7 @@ func main() {
 		ebiten.SetFullscreen(true)
 	}
 
-	if err := ebiten.RunGame(&Game{}); err != nil {
+	if err := ebiten.RunGame(newGame()); err != nil {
 		log.Fatal(err)
 	}
 }
