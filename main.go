@@ -43,9 +43,10 @@ func (g *Game) Update() error {
 	speed := 1 / float64(ebiten.TPS())
 	delta := g.targetPos.Sub(g.playerPos)
 	g.playerPos = g.playerPos.Add(delta.Scale(speed))
-	logger.Print(g.targetPos)
 
-	query := donburi.NewQuery(filter.Contains(components.Position))
+	query := donburi.NewQuery(filter.Contains(
+		components.Position,
+	))
 
 	for entry := range query.Iter(g.world) {
 		pos := components.Position.Get(entry)
@@ -58,8 +59,6 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	logger.Flush(screen)
-
 	angle := util.CursorPosition().Angle(g.playerPos) - math.Pi/2
 	distance := g.targetPos.Distance(g.playerPos)
 
@@ -78,6 +77,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	fireOp.ColorScale.ScaleAlpha(float32(distance) / 100)
 	fireOp.GeoM.Translate(g.playerPos.X, g.playerPos.Y)
 	screen.DrawImage(fireSprite, fireOp)
+
+	logger.Flush(screen)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
@@ -93,7 +94,9 @@ func newGame() *Game {
 	}
 
 	world := donburi.NewWorld()
-	world.Create(components.Position)
+	player := world.Create(components.Position)
+	entry := world.Entry(player)
+	donburi.Add(entry, components.Sprite, playerSprite)
 
 	return &Game{world, center, center}
 }
