@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 )
 
 const (
@@ -16,11 +17,28 @@ const (
 	DEST_DIR = "dist"
 )
 
+func copyFile(srcPath, destPath string) error {
+	var srcFile *os.File
+	var destFile *os.File
+	var err error
+
+	if srcFile, err = os.Open(srcPath); err != nil {
+		return err
+	}
+	defer srcFile.Close()
+
+	if destFile, err = os.Create(destPath); err != nil {
+		return err
+	}
+	defer destFile.Close()
+
+	_, err = io.Copy(destFile, srcFile)
+	return err
+}
+
 func copyTree() error {
 	return filepath.WalkDir(SRC_DIR, func(path string, d fs.DirEntry, err error) error {
 		var destPath string
-		var srcFile *os.File
-		var destFile *os.File
 
 		if err != nil {
 			return err
@@ -36,21 +54,22 @@ func copyTree() error {
 			return os.MkdirAll(destPath, os.ModePerm)
 		}
 
-		if srcFile, err = os.Open(path); err != nil {
-			return err
-		} else {
-			defer srcFile.Close()
-		}
-
-		if destFile, err = os.Create(destPath); err != nil {
-			return err
-		} else {
-			defer destFile.Close()
-		}
-
-		_, err = io.Copy(destFile, srcFile)
-		return err
+		return copyFile(path, destPath)
 	})
+}
+
+func copyWasmExec() error {
+	cmd := exec.Command("go", "env", "GOROOT")
+	output, err := cmd.Output()
+	if err != nil {
+		return err
+	}
+
+	goroot := strings.TrimSpace(string(output))
+	wasmExecPath := filepath.Join(goroot, "lib", "wasm", "wasm_exec.js")
+	wasmDestPath := filepath.Join(DEST_DIR, "wasm_exec.js")
+
+	return copyFile(wasmExecPath, wasmDestPath)
 }
 
 func main() {
@@ -63,6 +82,10 @@ func main() {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
+		panic(err)
+	}
+
+	if err := copyWasmExec(); err != nil {
 		panic(err)
 	}
 
