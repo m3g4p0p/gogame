@@ -36,7 +36,7 @@ func copyFile(srcPath, destPath string) error {
 	return err
 }
 
-func copyTree() error {
+func copyPublicTree() error {
 	return filepath.WalkDir(SRC_DIR, func(path string, d fs.DirEntry, err error) error {
 		var destPath string
 
@@ -72,16 +72,21 @@ func copyWasmExec() error {
 	return copyFile(wasmExecPath, wasmDestPath)
 }
 
-func main() {
-	// Ensure the dist directory exists
-	os.MkdirAll(DEST_DIR, os.ModePerm)
-
-	// Build the Go WebAssembly binary
+func buildMainWasm() error {
 	cmd := exec.Command("go", "build", "-o", filepath.Join(DEST_DIR, "main.wasm"), ".")
 	cmd.Env = append(os.Environ(), "GOOS=js", "GOARCH=wasm")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	if err := cmd.Run(); err != nil {
+
+	return cmd.Run()
+}
+
+func main() {
+	if err := os.MkdirAll(DEST_DIR, os.ModePerm); err != nil {
+		panic(err)
+	}
+
+	if err := buildMainWasm(); err != nil {
 		panic(err)
 	}
 
@@ -89,7 +94,7 @@ func main() {
 		panic(err)
 	}
 
-	if err := copyTree(); err != nil {
+	if err := copyPublicTree(); err != nil {
 		panic(err)
 	}
 
