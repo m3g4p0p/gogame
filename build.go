@@ -14,7 +14,7 @@ import (
 
 const (
 	SRC_DIR  = "public"
-	DEST_DIR = "dist"
+	DEST_DIR = "docs"
 )
 
 func copyFile(srcPath, destPath string) error {
