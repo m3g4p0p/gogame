@@ -7,9 +7,15 @@ import (
 	"github.com/yohamta/donburi/features/math"
 )
 
-func RotateCenter(img *ebiten.Image, theta float64, offset vec2.Vector) *ebiten.DrawImageOptions {
+func CenterOffset(img *ebiten.Image) math.Vec2 {
 	bounds := img.Bounds()
-	dx, dy := float64(bounds.Dx()), float64(bounds.Dy())
+	dx := float64(bounds.Dx())
+	dy := float64(bounds.Dy())
+	return math.NewVec2(-dx/2, -dy/2)
+}
+
+func RotateCenter(img *ebiten.Image, theta float64, offset vec2.Vector) *ebiten.DrawImageOptions {
+	dx, dy := CenterOffset(img).XY()
 	op := &ebiten.DrawImageOptions{}
 
 	op.GeoM.Translate(-dx/2+offset.X, -dy/2+offset.Y)
