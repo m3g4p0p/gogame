@@ -9,7 +9,6 @@ import (
 	"m3g4p0p/game/component"
 	"m3g4p0p/game/factory"
 	"m3g4p0p/game/util"
-	"m3g4p0p/game/vec2"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/yohamta/donburi"
@@ -29,8 +28,6 @@ var (
 
 type Game struct {
 	world      donburi.World
-	playerPos  vec2.Vector
-	targetPos  vec2.Vector
 	targetVec2 math.Vec2
 }
 
@@ -75,10 +72,10 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	))
 
 	for entry := range query.Iter(g.world) {
-		sprite := component.Sprite.Get(entry)
+		op := &ebiten.DrawImageOptions{}
 		pos := transform.WorldPosition(entry)
 		rot := transform.WorldRotation(entry)
-		op := &ebiten.DrawImageOptions{}
+		sprite := component.Sprite.Get(entry)
 		op.GeoM.Translate(util.CenterOffset(sprite).XY())
 		op.GeoM.Rotate(rot)
 		op.GeoM.Translate(pos.X, pos.Y)
@@ -94,18 +91,13 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 
 func newGame() *Game {
 	width, height := ebiten.WindowSize()
-
-	center := vec2.Vector{
-		X: float64(width) / 2,
-		Y: float64(height) / 2,
-	}
+	center := math.NewVec2(float64(width)/2, float64(height)/2)
 
 	world := donburi.NewWorld()
-	factory.CreateShip(world, playerSprite, center.X, center.Y)
-	// factory.CreateFire(world, fireSprite, player)
-	// world.Create(transform.Transform)
+	player := factory.CreateShip(world, playerSprite, center.X, center.Y)
+	factory.CreateFire(world, fireSprite, player)
 
-	return &Game{world, center, center, math.NewVec2(center.Values())}
+	return &Game{world, center}
 }
 
 func main() {
