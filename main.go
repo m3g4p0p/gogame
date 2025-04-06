@@ -13,7 +13,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/yohamta/donburi"
-	vector "github.com/yohamta/donburi/features/math"
+	"github.com/yohamta/donburi/features/math"
 	"github.com/yohamta/donburi/features/transform"
 	"github.com/yohamta/donburi/filter"
 )
@@ -31,7 +31,7 @@ type Game struct {
 	world      donburi.World
 	playerPos  vec2.Vector
 	targetPos  vec2.Vector
-	targetVec2 vector.Vec2
+	targetVec2 math.Vec2
 }
 
 func (g *Game) updateTransform() {
@@ -48,9 +48,10 @@ func (g *Game) updateTransform() {
 
 		pos := transform.WorldPosition(entry)
 		delta := g.targetVec2.Sub(pos).MulScalar(speed)
+		rot := delta.Angle(math.Vec2{}) - math.ToRadians(90)
 		transform.SetWorldPosition(entry, pos.Add(delta))
-		transform.LookAt(entry, g.targetVec2)
-		logger.Print(pos)
+		transform.SetWorldRotation(entry, rot)
+		logger.Print(g.targetVec2)
 	}
 }
 
@@ -74,13 +75,13 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	))
 
 	for entry := range query.Iter(g.world) {
+		sprite := component.Sprite.Get(entry)
 		pos := transform.WorldPosition(entry)
 		rot := transform.WorldRotation(entry)
 		op := &ebiten.DrawImageOptions{}
-		op.GeoM.Translate(pos.X, pos.Y)
+		op.GeoM.Translate(util.CenterOffset(sprite).XY())
 		op.GeoM.Rotate(rot)
-
-		sprite := component.Sprite.Get(entry)
+		op.GeoM.Translate(pos.X, pos.Y)
 		screen.DrawImage(sprite, op)
 	}
 
@@ -100,10 +101,11 @@ func newGame() *Game {
 	}
 
 	world := donburi.NewWorld()
-	player := factory.CreateShip(world, playerSprite, center.X, center.Y)
-	factory.CreateFire(world, fireSprite, player)
+	factory.CreateShip(world, playerSprite, center.X, center.Y)
+	// factory.CreateFire(world, fireSprite, player)
+	// world.Create(transform.Transform)
 
-	return &Game{world, center, center, vector.NewVec2(center.Values())}
+	return &Game{world, center, center, math.NewVec2(center.Values())}
 }
 
 func main() {
