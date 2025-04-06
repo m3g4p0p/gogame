@@ -73,12 +73,12 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	for entry := range query.Iter(g.world) {
 		op := &ebiten.DrawImageOptions{}
-		pos := transform.WorldPosition(entry)
+		pos := util.TranslatedWorldPosition(entry)
 		rot := transform.WorldRotation(entry)
 		sprite := component.Sprite.Get(entry)
 		op.GeoM.Translate(util.CenterOffset(sprite).XY())
 		op.GeoM.Rotate(rot)
-		op.GeoM.Translate(pos.X, pos.Y)
+		op.GeoM.Translate(pos.XY())
 		screen.DrawImage(sprite, op)
 	}
 

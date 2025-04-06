@@ -20,8 +20,9 @@ func CreateShip(world donburi.World, sprite *ebiten.Image, x, y float64) *donbur
 
 func CreateFire(world donburi.World, sprite *ebiten.Image, ship *donburi.Entry) *donburi.Entry {
 	fire := world.Entry(world.Create(transform.Transform, component.Sprite))
+	shipSprite := component.Sprite.Get(ship)
 	transform.Transform.SetValue(fire, transform.TransformData{
-		LocalPosition: math.NewVec2(0, float64(sprite.Bounds().Dy())),
+		LocalPosition: math.NewVec2(0, float64(shipSprite.Bounds().Dy())*0.7),
 	})
 	component.Sprite.Set(fire, sprite)
 	transform.AppendChild(ship, fire, false)
