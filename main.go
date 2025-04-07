@@ -49,6 +49,11 @@ func (g *Game) updateTransform() {
 		transform.SetWorldPosition(entry, pos.Add(delta))
 		transform.SetWorldRotation(entry, rot)
 		logger.Print(g.targetVec2)
+
+		if fire, ok := transform.FindChildWithComponent(entry, component.Fire); ok {
+			alpha := g.targetVec2.Distance(pos) * speed
+			component.Fire.SetValue(fire, component.FireData{Alpha: alpha})
+		}
 	}
 }
 
@@ -79,6 +84,12 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		op.GeoM.Translate(util.CenterOffset(sprite).XY())
 		op.GeoM.Rotate(rot)
 		op.GeoM.Translate(pos.XY())
+
+		if entry.HasComponent(component.Fire) {
+			alpha := component.Fire.GetValue(entry).Alpha
+			op.ColorScale.ScaleAlpha(float32(alpha))
+		}
+
 		screen.DrawImage(sprite, op)
 	}
 
@@ -94,7 +105,7 @@ func newGame() *Game {
 	center := math.NewVec2(float64(width)/2, float64(height)/2)
 
 	world := donburi.NewWorld()
-	player := factory.CreateShip(world, playerSprite, center.X, center.Y)
+	player := factory.CreateShip(world, playerSprite, center)
 	factory.CreateFire(world, fireSprite, player)
 
 	return &Game{world, center}

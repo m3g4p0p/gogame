@@ -8,8 +8,13 @@ import (
 	"github.com/yohamta/donburi/features/math"
 )
 
+type FireData struct {
+	Alpha float64
+}
+
 var (
 	Position = donburi.NewComponentType[vec2.Vector]()
 	Sprite   = donburi.NewComponentType[ebiten.Image]()
 	Target   = donburi.NewComponentType[math.Vec2]()
+	Fire     = donburi.NewComponentType[FireData]()
 )
