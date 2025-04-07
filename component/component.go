@@ -8,9 +8,7 @@ import (
 	"github.com/yohamta/donburi/features/math"
 )
 
-type FireData struct {
-	Alpha float64
-}
+type FireData float64
 
 var (
 	Position = donburi.NewComponentType[vec2.Vector]()

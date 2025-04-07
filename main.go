@@ -52,7 +52,7 @@ func (g *Game) updateTransform() {
 
 		if fire, ok := transform.FindChildWithComponent(entry, component.Fire); ok {
 			alpha := g.targetVec2.Distance(pos) * speed
-			component.Fire.SetValue(fire, component.FireData{Alpha: alpha})
+			component.Fire.SetValue(fire, component.FireData(alpha))
 		}
 	}
 }
@@ -86,7 +86,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		op.GeoM.Translate(pos.XY())
 
 		if entry.HasComponent(component.Fire) {
-			alpha := component.Fire.GetValue(entry).Alpha
+			alpha := component.Fire.GetValue(entry)
 			op.ColorScale.ScaleAlpha(float32(alpha))
 		}
 
