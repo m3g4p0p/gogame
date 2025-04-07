@@ -13,10 +13,8 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/yohamta/donburi"
-	"github.com/yohamta/donburi/ecs"
+	ecslib "github.com/yohamta/donburi/ecs"
 	"github.com/yohamta/donburi/features/math"
-	"github.com/yohamta/donburi/features/transform"
-	"github.com/yohamta/donburi/filter"
 )
 
 //go:embed assets/*
@@ -30,7 +28,7 @@ var (
 
 type Game struct {
 	world donburi.World
-	ecs   *ecs.ECS
+	ecs   *ecslib.ECS
 }
 
 func (g *Game) updateTarget() {
@@ -58,28 +56,7 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	query := donburi.NewQuery(filter.Contains(
-		transform.Transform,
-		component.Sprite,
-	))
-
-	for entry := range query.Iter(g.world) {
-		op := &ebiten.DrawImageOptions{}
-		pos := util.TranslatedWorldPosition(entry)
-		rot := transform.WorldRotation(entry)
-		sprite := component.Sprite.Get(entry)
-		op.GeoM.Translate(util.CenterOffset(sprite).XY())
-		op.GeoM.Rotate(rot)
-		op.GeoM.Translate(pos.XY())
-
-		if entry.HasComponent(component.Fire) {
-			alpha := component.Fire.GetValue(entry)
-			op.ColorScale.ScaleAlpha(float32(alpha))
-		}
-
-		screen.DrawImage(sprite, op)
-	}
-
+	g.ecs.Draw(screen)
 	logger.Flush(screen)
 }
 
@@ -89,8 +66,10 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 
 func newGame() *Game {
 	world := donburi.NewWorld()
-	ecs := ecs.NewECS(world)
+	ecs := ecslib.NewECS(world)
 	ecs.AddSystem(system.NewTarget().Update)
+	ecs.AddRenderer(ecslib.LayerDefault, system.NewRender().Draw)
+
 	width, height := ebiten.WindowSize()
 	center := math.NewVec2(float64(width)/2, float64(height)/2)
 	player := factory.CreateShip(world, playerSprite, center, component.Player)
