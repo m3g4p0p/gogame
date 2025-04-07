@@ -27,13 +27,24 @@ var (
 )
 
 type Game struct {
-	world      donburi.World
-	targetVec2 math.Vec2
+	world donburi.World
+}
+
+func (g *Game) updateTarget() {
+	player := component.Player.MustFirst(g.world)
+	target := util.CursorPositionVec2()
+
+	if player.HasComponent(component.Target) {
+		component.Target.SetValue(player, target)
+	} else {
+		donburi.Add(player, component.Target, &target)
+	}
 }
 
 func (g *Game) updateTransform() {
 	query := donburi.NewQuery(filter.Contains(
 		transform.Transform,
+		component.Target,
 	))
 
 	speed := 1 / float64(ebiten.TPS())
@@ -44,14 +55,15 @@ func (g *Game) updateTransform() {
 		}
 
 		pos := transform.WorldPosition(entry)
-		delta := g.targetVec2.Sub(pos).MulScalar(speed)
+		target := component.Target.Get(entry)
+		delta := target.Sub(pos).MulScalar(speed)
 		rot := delta.Angle(math.Vec2{}) - math.ToRadians(90)
 		transform.SetWorldPosition(entry, pos.Add(delta))
 		transform.SetWorldRotation(entry, rot)
-		logger.Print(g.targetVec2)
+		logger.Print(target)
 
 		if fire, ok := transform.FindChildWithComponent(entry, component.Fire); ok {
-			alpha := g.targetVec2.Distance(pos) * speed
+			alpha := target.Distance(pos) * speed
 			component.Fire.SetValue(fire, component.FireData(alpha))
 		}
 	}
@@ -63,7 +75,7 @@ func (g *Game) Update() error {
 	}
 
 	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
-		g.targetVec2 = util.CursorPositionVec2()
+		g.updateTarget()
 	}
 
 	g.updateTransform()
@@ -101,14 +113,13 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 }
 
 func newGame() *Game {
+	world := donburi.NewWorld()
 	width, height := ebiten.WindowSize()
 	center := math.NewVec2(float64(width)/2, float64(height)/2)
-
-	world := donburi.NewWorld()
-	player := factory.CreateShip(world, playerSprite, center)
+	player := factory.CreateShip(world, playerSprite, center, component.Player)
 	factory.CreateFire(world, fireSprite, player)
 
-	return &Game{world, center}
+	return &Game{world}
 }
 
 func main() {
