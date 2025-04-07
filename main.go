@@ -27,12 +27,11 @@ var (
 )
 
 type Game struct {
-	world donburi.World
-	ecs   *ecslib.ECS
+	ecs *ecslib.ECS
 }
 
 func (g *Game) updateTarget() {
-	player := component.Player.MustFirst(g.world)
+	player := component.Player.MustFirst(g.ecs.World)
 	target := util.CursorPositionVec2()
 
 	if player.HasComponent(component.Target) {
@@ -75,7 +74,7 @@ func newGame() *Game {
 	player := factory.CreateShip(world, playerSprite, center, component.Player)
 	factory.CreateFire(world, fireSprite, player)
 
-	return &Game{world, ecs}
+	return &Game{ecs}
 }
 
 func main() {
