@@ -4,6 +4,7 @@ import (
 	"embed"
 	"errors"
 	"log"
+	"math/rand"
 	"runtime"
 
 	"m3g4p0p/game/component"
@@ -63,7 +64,7 @@ func (g *Game) updateTransform() {
 		logger.Print(target)
 
 		if fire, ok := transform.FindChildWithComponent(entry, component.Fire); ok {
-			alpha := target.Distance(pos) * speed
+			alpha := target.Distance(pos)*speed + rand.Float64()/10
 			component.Fire.SetValue(fire, component.FireData(alpha))
 		}
 	}
