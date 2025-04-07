@@ -4,15 +4,16 @@ import (
 	"embed"
 	"errors"
 	"log"
-	"math/rand"
 	"runtime"
 
 	"m3g4p0p/game/component"
 	"m3g4p0p/game/factory"
+	"m3g4p0p/game/system"
 	"m3g4p0p/game/util"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/yohamta/donburi"
+	"github.com/yohamta/donburi/ecs"
 	"github.com/yohamta/donburi/features/math"
 	"github.com/yohamta/donburi/features/transform"
 	"github.com/yohamta/donburi/filter"
@@ -29,6 +30,7 @@ var (
 
 type Game struct {
 	world donburi.World
+	ecs   *ecs.ECS
 }
 
 func (g *Game) updateTarget() {
@@ -42,34 +44,6 @@ func (g *Game) updateTarget() {
 	}
 }
 
-func (g *Game) updateTransform() {
-	query := donburi.NewQuery(filter.Contains(
-		transform.Transform,
-		component.Target,
-	))
-
-	speed := 1 / float64(ebiten.TPS())
-
-	for entry := range query.Iter(g.world) {
-		if _, ok := transform.GetParent(entry); ok {
-			continue
-		}
-
-		pos := transform.WorldPosition(entry)
-		target := component.Target.Get(entry)
-		delta := target.Sub(pos).MulScalar(speed)
-		rot := delta.Angle(math.Vec2{}) - math.ToRadians(90)
-		transform.SetWorldPosition(entry, pos.Add(delta))
-		transform.SetWorldRotation(entry, rot)
-		logger.Print(target)
-
-		if fire, ok := transform.FindChildWithComponent(entry, component.Fire); ok {
-			alpha := target.Distance(pos)*speed + rand.Float64()/10
-			component.Fire.SetValue(fire, component.FireData(alpha))
-		}
-	}
-}
-
 func (g *Game) Update() error {
 	if ebiten.IsKeyPressed(ebiten.KeyC) && ebiten.IsKeyPressed(ebiten.KeyControl) {
 		return errors.New("exit")
@@ -79,7 +53,7 @@ func (g *Game) Update() error {
 		g.updateTarget()
 	}
 
-	g.updateTransform()
+	g.ecs.Update()
 	return nil
 }
 
@@ -115,12 +89,14 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 
 func newGame() *Game {
 	world := donburi.NewWorld()
+	ecs := ecs.NewECS(world)
+	ecs.AddSystem(system.NewTarget().Update)
 	width, height := ebiten.WindowSize()
 	center := math.NewVec2(float64(width)/2, float64(height)/2)
 	player := factory.CreateShip(world, playerSprite, center, component.Player)
 	factory.CreateFire(world, fireSprite, player)
 
-	return &Game{world}
+	return &Game{world, ecs}
 }
 
 func main() {
