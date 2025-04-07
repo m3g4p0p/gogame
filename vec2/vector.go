@@ -32,3 +32,7 @@ func (v Vector) Distance(t Vector) float64 {
 func (v Vector) String() string {
 	return fmt.Sprintf("(%v, %v)", v.X, v.Y)
 }
+
+func (v Vector) Values() (float64, float64) {
+	return v.X, v.Y
+}

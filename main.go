@@ -4,15 +4,16 @@ import (
 	"embed"
 	"errors"
 	"log"
-	"math"
 	"runtime"
 
-	"m3g4p0p/game/components"
+	"m3g4p0p/game/component"
+	"m3g4p0p/game/factory"
 	"m3g4p0p/game/util"
-	"m3g4p0p/game/vec2"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/yohamta/donburi"
+	"github.com/yohamta/donburi/features/math"
+	"github.com/yohamta/donburi/features/transform"
 	"github.com/yohamta/donburi/filter"
 )
 
@@ -26,9 +27,34 @@ var (
 )
 
 type Game struct {
-	world     donburi.World
-	playerPos vec2.Vector
-	targetPos vec2.Vector
+	world      donburi.World
+	targetVec2 math.Vec2
+}
+
+func (g *Game) updateTransform() {
+	query := donburi.NewQuery(filter.Contains(
+		transform.Transform,
+	))
+
+	speed := 1 / float64(ebiten.TPS())
+
+	for entry := range query.Iter(g.world) {
+		if _, ok := transform.GetParent(entry); ok {
+			continue
+		}
+
+		pos := transform.WorldPosition(entry)
+		delta := g.targetVec2.Sub(pos).MulScalar(speed)
+		rot := delta.Angle(math.Vec2{}) - math.ToRadians(90)
+		transform.SetWorldPosition(entry, pos.Add(delta))
+		transform.SetWorldRotation(entry, rot)
+		logger.Print(g.targetVec2)
+
+		if fire, ok := transform.FindChildWithComponent(entry, component.Fire); ok {
+			alpha := g.targetVec2.Distance(pos) * speed
+			component.Fire.SetValue(fire, component.FireData(alpha))
+		}
+	}
 }
 
 func (g *Game) Update() error {
@@ -37,46 +63,35 @@ func (g *Game) Update() error {
 	}
 
 	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
-		g.targetPos = util.CursorPosition()
+		g.targetVec2 = util.CursorPositionVec2()
 	}
 
-	speed := 1 / float64(ebiten.TPS())
-	delta := g.targetPos.Sub(g.playerPos)
-	g.playerPos = g.playerPos.Add(delta.Scale(speed))
-
-	query := donburi.NewQuery(filter.Contains(
-		components.Position,
-	))
-
-	for entry := range query.Iter(g.world) {
-		pos := components.Position.Get(entry)
-		delta := g.targetPos.Sub(*pos)
-		newPos := pos.Add(delta.Scale(speed))
-		components.Position.Set(entry, &newPos)
-	}
-
+	g.updateTransform()
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	angle := util.CursorPosition().Angle(g.playerPos) - math.Pi/2
-	distance := g.targetPos.Distance(g.playerPos)
+	query := donburi.NewQuery(filter.Contains(
+		transform.Transform,
+		component.Sprite,
+	))
 
-	op := util.RotateCenter(playerSprite, angle, vec2.Vector{})
-	op.GeoM.Translate(g.playerPos.X, g.playerPos.Y)
-	screen.DrawImage(playerSprite, op)
+	for entry := range query.Iter(g.world) {
+		op := &ebiten.DrawImageOptions{}
+		pos := util.TranslatedWorldPosition(entry)
+		rot := transform.WorldRotation(entry)
+		sprite := component.Sprite.Get(entry)
+		op.GeoM.Translate(util.CenterOffset(sprite).XY())
+		op.GeoM.Rotate(rot)
+		op.GeoM.Translate(pos.XY())
 
-	fireOp := util.RotateCenter(
-		fireSprite,
-		angle,
-		vec2.Vector{
-			Y: float64(playerSprite.Bounds().Dy()) * 0.7,
-		},
-	)
+		if entry.HasComponent(component.Fire) {
+			alpha := component.Fire.GetValue(entry)
+			op.ColorScale.ScaleAlpha(float32(alpha))
+		}
 
-	fireOp.ColorScale.ScaleAlpha(float32(distance) / 100)
-	fireOp.GeoM.Translate(g.playerPos.X, g.playerPos.Y)
-	screen.DrawImage(fireSprite, fireOp)
+		screen.DrawImage(sprite, op)
+	}
 
 	logger.Flush(screen)
 }
@@ -87,18 +102,13 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 
 func newGame() *Game {
 	width, height := ebiten.WindowSize()
-
-	center := vec2.Vector{
-		X: float64(width) / 2,
-		Y: float64(height) / 2,
-	}
+	center := math.NewVec2(float64(width)/2, float64(height)/2)
 
 	world := donburi.NewWorld()
-	player := world.Create(components.Position)
-	entry := world.Entry(player)
-	donburi.Add(entry, components.Sprite, playerSprite)
+	player := factory.CreateShip(world, playerSprite, center)
+	factory.CreateFire(world, fireSprite, player)
 
-	return &Game{world, center, center}
+	return &Game{world, center}
 }
 
 func main() {
