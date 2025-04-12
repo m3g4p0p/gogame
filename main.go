@@ -23,7 +23,8 @@ var logger = util.NewLogger(log.Lshortfile)
 
 var (
 	playerSprite = util.Must(util.LoadImage(assets, "assets/playerShip1_blue.png"))
-	fireSprite   = util.Must(util.LoadImage(assets, "assets/Effects/fire09.png"))
+	fireSprite   = util.Must(util.LoadImage(assets, "assets/Effects/fire11.png"))
+	meteorSprite = util.Must(util.LoadImage(assets, "assets/Meteors/meteorGrey_small1.png"))
 )
 
 type Game struct {
@@ -71,8 +72,9 @@ func newGame() *Game {
 
 	width, height := ebiten.WindowSize()
 	center := math.NewVec2(float64(width)/2, float64(height)/2)
-	player := factory.CreateShip(world, playerSprite, center, component.Player)
-	factory.CreateFire(world, fireSprite, player)
+	player := factory.CreateTransform(world, playerSprite, center, component.Player)
+	offset := math.NewVec2(0, float64(playerSprite.Bounds().Dy())*0.7)
+	factory.CreateTransformChild(world, fireSprite, player, offset, component.Fire)
 
 	return &Game{ecs}
 }
