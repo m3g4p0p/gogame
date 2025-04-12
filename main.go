@@ -4,6 +4,7 @@ import (
 	"embed"
 	"errors"
 	"log"
+	"math/rand/v2"
 	"runtime"
 
 	"m3g4p0p/game/component"
@@ -75,6 +76,11 @@ func newGame() *Game {
 	player := factory.CreateTransform(world, playerSprite, center, component.Player)
 	offset := math.NewVec2(0, float64(playerSprite.Bounds().Dy())*0.7)
 	factory.CreateTransformChild(world, fireSprite, player, offset, component.Fire)
+
+	factory.CreateTransform(world, meteorSprite, math.NewVec2(
+		rand.Float64()*float64(width),
+		rand.Float64()*float64(height),
+	))
 
 	return &Game{ecs}
 }
